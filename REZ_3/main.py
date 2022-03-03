@@ -22,18 +22,21 @@ def main():
     # чтение и обработка изображения для поиска контуров строк / слов
     img = cv.imread(INPUT_IMG)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    blur = cv.blur(gray, (11, 3))
+    blur = cv.blur(gray, (13, 3))
     _, thresh = cv.threshold(blur, 200, 255, cv.THRESH_BINARY_INV)
     kernel = np.ones((1, 31), dtype='uint8')
     dilate = cv.dilate(thresh, kernel, iterations=1)
-
-    # сохранение промежуточного изображения
-    cv.imwrite(PROCESSED_IMG, dilate)
 
     # поиск контуров и рамок (блоков)
     contours = cv.findContours(dilate, cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)[0]
     assert len(contours) > 0, 'No contours found'
+    dilate = cv.cvtColor(dilate, cv.COLOR_GRAY2BGR)
+    cv.drawContours(dilate, contours, -1, color=LINE_COLOR,
+                    thickness=LINE_THICKNESS)
+    # сохранение промежуточного изображения
+    cv.imwrite(PROCESSED_IMG, dilate)
+
     rectangles = []
     for c in contours:
         x, y, w, h = cv.boundingRect(c)
